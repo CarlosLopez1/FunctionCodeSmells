@@ -7,44 +7,70 @@
     F4: Dead Function
 */
 
+using System.Drawing;
+
 public class Program {
     public static void Main(string[] args) {
-        DisplayMessage("*** A very sophisticated student grades dashboard ***", centered: true, ConsoleColor.Green);
 
+        printTitle();
+        printGrades();
+        Console.Write("\n\n\nPress any key to close...");
+        Console.ReadKey();
+    }
+
+    public static void printTitle()
+    {
+        DisplayMessage("*** A very sophisticated student grades dashboard ***", centered: true, ConsoleColor.Green);
+    }
+
+    public static void printGrades()
+    {
         DisplayGrades("Cleo", "Strong", new (string, int)[] { ("Coding", new Random().Next(5, 11)), ("Math", new Random().Next(5, 11)), ("Science", new Random().Next(5, 11)) }, lastNameFirst: true, showLetterGrade: false);
         DisplayGrades("Olivia", "Allen", new (string, int)[] { ("Coding", new Random().Next(5, 11)), ("Math", new Random().Next(5, 11)), ("Science", new Random().Next(5, 11)) }, lastNameFirst: false, showLetterGrade: false);
         DisplayGrades("Fred", "Cisneros", new (string, int)[] { ("Coding", new Random().Next(5, 11)), ("Math", new Random().Next(5, 11)), ("Science", new Random().Next(5, 11)) }, lastNameFirst: true, showLetterGrade: true);
         DisplayGrades("Julia", "Pacheco", new (string, int)[] { ("Coding", new Random().Next(5, 11)), ("Math", new Random().Next(5, 11)), ("Science", new Random().Next(5, 11)) }, lastNameFirst: false, showLetterGrade: false);
         DisplayGrades("Gene", "Dixon", new (string, int)[] { ("Coding", new Random().Next(5, 11)), ("Math", new Random().Next(5, 11)), ("Science", new Random().Next(5, 11)) }, lastNameFirst: true, showLetterGrade: true);
-
-        Console.Write("\n\n\nPress any key to close...");
-        Console.ReadKey();
     }
 
     private static void DisplayGrades(string firstName, string lastName, (string, int)[] grades, bool lastNameFirst, bool showLetterGrade) {
-        string message;
-        
-        string formattedName = lastNameFirst ? $"{lastName}, {firstName}" : $"{firstName} {lastName}";
-        message = $"Student: { formattedName }\n";
 
-        var maxSubjectLength = grades.Select(grade => grade.Item1)
-            .ToList()
-            .Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur)
-            .Length;
+        string message = $"Student: { getFormatedName(firstName, lastName, lastNameFirst) }\n";
+
+        var maxSubjectLength = calculateMaxSubjectLength(grades);
 
         foreach (var grade in grades)
         {
-            string formattedGrade = grade.Item2.ToString();
+            var formattedGrade = getFormattedGrade(grade, showLetterGrade);
 
-            if (showLetterGrade && !GetLetterGrade(grade.Item2, out formattedGrade))
-                formattedGrade = $"!INVALID";
-            
             var padding = new string(' ', maxSubjectLength - grade.Item1.Length);
 
             message += $"\tSubject: {grade.Item1}{padding} - Grade: {formattedGrade}\n";
         }
 
         DisplayMessage(message);
+    }
+
+    private static string getFormatedName(string firstName, string lastName, bool lastNameFirst)
+    {
+        return lastNameFirst ? $"{lastName}, {firstName}" : $"{firstName} {lastName}";
+    }
+
+    private static int calculateMaxSubjectLength((string, int)[] grades)
+    { 
+        return grades.Select(grade => grade.Item1)
+            .ToList()
+            .Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur)
+            .Length;
+    }
+
+    private static string getFormattedGrade((string, int) grade, bool showLetterGrade)
+    {
+        string formattedGrade = grade.Item2.ToString();
+
+        if (showLetterGrade && !GetLetterGrade(grade.Item2, out formattedGrade))
+            formattedGrade = $"!INVALID";
+
+        return formattedGrade;
     }
 
     private static bool GetLetterGrade(int value, out string formattedGrade) {
@@ -61,19 +87,33 @@ public class Program {
     }
 
     private static void DisplayMessage(string message, bool centered = false, ConsoleColor color = ConsoleColor.White) {
-        if (centered) {
+        setupMessage(message, centered);
+        setMessageColor(color);
+        Console.WriteLine(message);
+        resetMessageColor();
+    }
+
+    private static void setupMessage(string message, bool centered)
+    {
+        if (centered)
+        {
             int padding = (Console.WindowWidth + message.Length) / 2;
             message = message.PadLeft(padding);
         }
+    }
 
-        if(color != ConsoleColor.White)
+    private static void setMessageColor(ConsoleColor color)
+    {
+        //if (color != ConsoleColor.White)
             Console.ForegroundColor = color;
+    }
 
-        Console.WriteLine(message);   
-
-        if(color != ConsoleColor.White)
+    private static void resetMessageColor()
+    {
+        //if (color != ConsoleColor.White)
             Console.ForegroundColor = ConsoleColor.White;
     }
+
 
     #region Mocks
     private static Grade[] GetMockgrades() {
